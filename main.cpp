@@ -198,7 +198,7 @@ int main() {
 	fLight.SetAttenuation(1.0f, 0.045, 0.0075);
 
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	//glfwSwapInterval(1);
+	glfwSwapInterval(0);
 	scene = new Scene(WIDTH, HEIGHT);
 
 	//renderbuffers
@@ -498,9 +498,9 @@ int main() {
 	}
 	shader1->DeleteShader();
 
-	/*ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
-	ImGui::DestroyContext();*/
+	ImGui::DestroyContext();
 	glfwTerminate();
 	return 0;
 }
