@@ -1,0 +1,28 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558 
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "g++-8 build active file",
+            "command": "/usr/bin/g++-8",
+            "args": [
+                "-g",
+                "${file}",
+                "-o",
+                "${fileDirname}/run.out",
+                "-std=c++17",
+                "-L/usr/local/lib", "-lglfw", "-lglfw3", "-lrt", "-lm", "-lXrandr", "-lXrender", "-lXi", "-lGL", "-lpthread", "-pthread", "-lm", "-ldl", "-lXdamage", "-lXfixes", "-lX11-xcb", "-lxcb-glx", "-lxcb-dri2", "-lXxf86vm", "-lXext", "-lX11", "-lpthread", "-lxcb", "-lXau", "-lXdmcp", "-ldrm", "-lGLEW", "-lGLU", "-lassimp", "-lstdc++" "-lz"
+
+            ],
+            "options": {
+                "cwd": "/usr/bin"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": "build"
+        }
+    ]
+}
