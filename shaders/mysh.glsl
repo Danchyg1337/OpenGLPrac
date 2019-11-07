@@ -73,6 +73,7 @@ struct Material{
 	sampler2D texture_specular1;
 	sampler2D texture_specular2;
 	sampler2D texture_reflect1;
+	sampler2D texture_reflect2;
 
 	float shininess;
 };

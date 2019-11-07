@@ -35,9 +35,10 @@ void Mesh::Draw(Shader* shader) {
 		else if (strcmp(name,"texture_reflect")) {
 			num[0] += reflectN++;
 		}
-		char unif[50] = "material.";
+		char unif[100] = "material.";
 		strcat_s(unif, name);
 		strcat_s(unif, num);
+		std::cout << unif<<std::endl;
 		glUniform1i(glGetUniformLocation(shader->Program, unif), t);
 		glBindTexture(GL_TEXTURE_2D, texts[t].id);
 	}

@@ -46,7 +46,7 @@ void Model::processNode(aiNode* node , const aiScene* scene) {
 		processNode(node->mChildren[t], scene);
 	}
 	//std::cout << "Childrens: " << node->mNumChildren << "\nMeshes: " << node->mNumMeshes << std::endl;
-	std::cout << numMesh << std::endl;
+	//std::cout << numMesh << std::endl;
 }
 
 Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
@@ -88,10 +88,9 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 		textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
 		std::vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
 		textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
-		std::vector<Texture> reflectMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_reflect");
+		std::vector<Texture> reflectMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_reflect");										// bad aiTType 
 		textures.insert(textures.end(), reflectMaps.begin(), reflectMaps.end());
 	}
-	
 	return Mesh(vertices, indices, textures);
 }
 

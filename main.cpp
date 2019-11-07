@@ -24,6 +24,7 @@
 #include <chrono>
 #include <future>
 #include <mutex>
+#include <memory>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -85,28 +86,26 @@ void* operator new(size_t size) {
 }
 #endif
 
-glm::vec3 lightPos(0.0f, 11.0f, 1.0f);  //light
-
-
-void GetFPS(GLFWwindow* window, float* fps);
-
-float TEX_VISIBLE = 1.0;
-glm::vec3 cameraPos = glm::vec3(3, 12, 0);
-glm::vec3 normCursore;
 bool keys[1024];
-
-
-
-void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int modes);
-void DoMovement(float fElapsedTime);
-void MouseEvent(GLFWwindow* window, double MouseX, double MouseY);
-
 bool flashlight = false;
 bool firstmouse = true;
 bool cursoreActive = false;
-float pitch, yaw, lastX, lastY;
 int BLUR = 5, blurWeightNum = 5;
+float pitch, yaw, lastX, lastY;
 float blurA = 2;
+float TEX_VISIBLE = 1.0;
+
+glm::mat4 model;
+glm::vec3 lightPos(0.0f, 11.0f, 1.0f);  //light
+glm::vec3 cameraPos = glm::vec3(3, 12, 0);
+glm::vec3 normCursore;
+glm::vec3 doodPos(0.0, 10.0, 0.0);
+Scene* scene;
+
+void GetFPS(GLFWwindow* window, float& fps);
+void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int modes);
+void DoMovement(float fElapsedTime);
+void MouseEvent(GLFWwindow* window, double MouseX, double MouseY);
 
 void PrintErrors(){
 	int errorcode = glGetError();
@@ -138,11 +137,6 @@ bool checkExist(std::vector<T> &vec, unsigned int cell) {
 	return true;
 }
 
-glm::mat4 model;
-glm::vec3 doodPos(0.0, 10.0, 0.0);
-Scene* scene;
-
-
 int main() {
 	GLFWwindow *gwin;
 	if (!glfwInit()) return -1;
@@ -157,7 +151,6 @@ int main() {
 	glfwSetCursorPosCallback(gwin, MouseEvent);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_STENCIL_TEST);
-	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	if (glewInit() != GLEW_OK) {
 		std::cout << ":C\n";
@@ -288,6 +281,7 @@ int main() {
 	Texture tex1 = Texture("textures/container.png", GL_TEXTURE0, GL_RGB, "texture_diffuse");
 	Texture tex2 = Texture("textures/container_specular.png", GL_TEXTURE0, GL_RGB, "texture_specular");
 	Texture tex3 = Texture("textures/grass.png", GL_TEXTURE0, GL_RGBA, "texture_diffuse", true);
+	tex3.setRepeatMode(GL_CLAMP_TO_BORDER, 3);
 	Texture tex4 = Texture("textures/blue.png", GL_TEXTURE0, GL_RGBA, "texture_diffuse");
 
 	std::string cubemtex[] = { "skybox/right.jpg", "skybox/left.jpg", "skybox/top.jpg", "skybox/bottom.jpg","skybox/front.jpg" ,"skybox/back.jpg" };
@@ -434,7 +428,7 @@ int main() {
 		fElapsedTime = elapsedTime.count();
 		
 		//dynamicCubeMap->GenerateCubemap(glm::vec3(0, 4, 0), scene);
-		GetFPS(gwin, &FPS);
+		GetFPS(gwin, FPS);
 		DoMovement(fElapsedTime);
 		if (cursoreActive) glfwSetInputMode(gwin, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 		else glfwSetInputMode(gwin, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -505,14 +499,14 @@ int main() {
 	return 0;
 }
 
-void GetFPS(GLFWwindow* window, float* fps) {
+void GetFPS(GLFWwindow* window, float& fps) {
 	static float previous_seconds = glfwGetTime();
 	static int frame_count;
 	float current_seconds = glfwGetTime();
 	float elapsed_seconds = current_seconds - previous_seconds;
 	if (elapsed_seconds > 0.25) {
 		previous_seconds = current_seconds;
-		*fps = (float)frame_count / elapsed_seconds;
+		fps = (float)frame_count / elapsed_seconds;
 		frame_count = 0;
 	}
 	frame_count++;

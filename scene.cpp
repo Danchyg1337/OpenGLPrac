@@ -49,13 +49,13 @@ void Scene::LoadModels() {
 
 void Scene::LoadSingleModel(Model* mdl) {
 	std::lock_guard<std::mutex> lock(mut_modelsLoad);
-	std::cout << "Loading " << mdl->path.value_or("NONE") << std::endl;
+	//std::cout << "Loading " << mdl->path.value_or("NONE") << std::endl;
 	if(mdl->path.has_value())
 		mdl->loadModel(mdl->path.value());
 	
 	if (mdl->transparent) TrModels.push_back(mdl);
 	else simpleModels.push_back(mdl);
-	std::cout << "Loaded " << mdl->path.value_or("NONE ") << " with " <<mdl->meshes[0].verts.size()<<std::endl;
+	//std::cout << "Loaded " << mdl->path.value_or("NONE ") << " with " <<mdl->meshes[0].verts.size()<<std::endl;
 }
 
 bool Scene::DrawToFramebuffer(GLuint frmBuffer) {
@@ -118,6 +118,7 @@ void Scene::Draw() {
 	skybox->Unbind();
 
 	//draw transparent 
+	glEnable(GL_BLEND);
 	for (std::map<float, Model*>::reverse_iterator it = transparentModels.rbegin(); it != transparentModels.rend(); it++) {
 		it->second->shader->Use();
 		for (int t = 0; t < 5; t++) {
@@ -128,6 +129,7 @@ void Scene::Draw() {
 		it->second->Draw();
 		glUseProgram(0);
 	}
+	glDisable(GL_BLEND);
 }
 
 void Scene::DrawToScreen_Shader(Shader* shader) {
