@@ -23,22 +23,23 @@ void Mesh::Draw(Shader* shader) {
 	for (GLuint t = 0; t < texts.size(); t++) {
 		glActiveTexture(GL_TEXTURE0 + t);
 
-		const char* name = texts[t].type.data();
+		char name[25];
+		strcpy_s(name, texts[t].type.data());
 		char num[2] = { '0', '\0' };									//unsafe but fast;
 	
-		if (strcmp(name, "texture_diffuse")) {
+		if (!strcmp(name, "texture_diffuse")) {
 			num[0] += diffuseN++;
 		}
-		else if (strcmp(name,"texture_specular")) {
+		else if (!strcmp(name,"texture_specular")) {
 			num[0] += specularN++;
 		}
-		else if (strcmp(name,"texture_reflect")) {
+		else if (!strcmp(name,"texture_reflect")) {
 			num[0] += reflectN++;
 		}
 		char unif[100] = "material.";
 		strcat_s(unif, name);
 		strcat_s(unif, num);
-		std::cout << unif<<std::endl;
+		//std::cout << unif<<std::endl;
 		glUniform1i(glGetUniformLocation(shader->Program, unif), t);
 		glBindTexture(GL_TEXTURE_2D, texts[t].id);
 	}

@@ -5,7 +5,7 @@ public:
     VFX& operator=(VFX&) = delete;
     static VFX* GetInstance();
 
-    void BlurBrightAreas(GLuint screenTexture, GLuint dstTexture, float brightness, unsigned weightNum, float gaussianFloat, int blurAmount, float* levels, unsigned levelsNum);
+    void BlurBrightAreas(GLuint screenTexture, GLuint dstFramebuffer, float brightness, unsigned weightNum, float gaussianFloat, int blurAmount, float* levels, unsigned levelsNum);
     void BlurTexture(GLuint srcTexture, GLuint dstTexture, unsigned weightNum, float gaussianFloat, int blurAmount, float* levels, unsigned levelsNum);
 private:
     static VFX* Instance;

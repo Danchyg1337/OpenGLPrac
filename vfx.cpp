@@ -39,6 +39,7 @@ void VFX::BlurTexture(GLuint srcTexture, GLuint dstTexture, unsigned weightNum, 
         blurTheight = h1;
     }
 
+	glTextureImage2DEXT(dstTexture, GL_TEXTURE_2D, 0, GL_RGB16F, w2, h2, 0, GL_RGBA, GL_FLOAT, NULL);
     glViewport(0, 0, w1, h1);
     shaderBlur->Use();
     glActiveTexture(GL_TEXTURE0);
@@ -46,19 +47,20 @@ void VFX::BlurTexture(GLuint srcTexture, GLuint dstTexture, unsigned weightNum, 
     glUniform1i( shaderBlur->SetUniform("ScreenTexture"), 0);
     glUniform1i( shaderBlur->SetUniform("kSize"), weightNum);
     glUniform1fv(shaderBlur->SetUniform("weight"), weightNum, blurWeight);
-	glUniform1i(shaderBlur->SetUniform("levelsNum"), levelsNum);
+	glUniform1i( shaderBlur->SetUniform("levelsNum"), levelsNum);
 	glUniform1fv(shaderBlur->SetUniform("level"), levelsNum, levels);
   	int horizontal = true;
    	bool first = true;
 	for (int t = 0; t < blurAmount; t++) {
-		glGenerateTextureMipmap(pptbo[horizontal]);
-		if(t==blurAmount-1) glBindFramebuffer(GL_FRAMEBUFFER, fboOut);
+		glGenerateTextureMipmap(pptbo[!horizontal]);
+		if(t>=blurAmount-1) glBindFramebuffer(GL_FRAMEBUFFER, fboOut);
 		else glBindFramebuffer(GL_FRAMEBUFFER, ppfbo[horizontal]);
 		glBindTexture(GL_TEXTURE_2D, first ? srcTexture : pptbo[!horizontal]);
 		glUniform1i(shaderBlur->SetUniform("horizontal"), horizontal);
 		horizontal = !horizontal;
 		if (first) first = false;
 		glDrawArrays(GL_TRIANGLES, 0, 6);
+		//glTextureSubImage2D(pptbo[!horizontal], 0, 0, 0, w1, h1, GL_RGB16F, GL_FLOAT, 0);
 	}
 	glTextureSubImage2D(pptbo[0], 0, 0, 0, w1, h1, GL_RGB16F, GL_FLOAT, 0);
 	glTextureSubImage2D(pptbo[1], 0, 0, 0, w1, h1, GL_RGB16F, GL_FLOAT, 0);
@@ -132,8 +134,8 @@ void VFX::Init(unsigned width, unsigned height){
     Initialized = true;
 }
 
-void VFX::BlurBrightAreas(GLuint screenTexture, GLuint dstTexture, float brightness, unsigned weightNum, float gaussianFloat, int blurAmount, float* levels, unsigned levelsNum){  
-    int widthS, heightS;
+void VFX::BlurBrightAreas(GLuint screenTexture, GLuint dstFramebuffer, float brightness, unsigned weightNum, float gaussianFloat, int blurAmount, float* levels, unsigned levelsNum){  
+	int widthS, heightS;
 	glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, screenTexture);
     glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &widthS);
@@ -155,15 +157,12 @@ void VFX::BlurBrightAreas(GLuint screenTexture, GLuint dstTexture, float brightn
 
 	glGenerateTextureMipmap(tboDouble[1]);
 
-	VFX::GetInstance()->BlurTexture(tboDouble[1], dstTexture, weightNum, gaussianFloat, blurAmount, levels, levelsNum);
+	VFX::GetInstance()->BlurTexture(tboDouble[1], tboDouble[1], weightNum, gaussianFloat, blurAmount, levels, levelsNum);
 	
-	glBindFramebuffer(GL_FRAMEBUFFER, fboOut);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, dstTexture, 0);
-
+	glBindFramebuffer(GL_FRAMEBUFFER, dstFramebuffer);
 
 	shader2Buffers2->Use();
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);																		
-	glBindTexture(GL_TEXTURE_2D, dstTexture);
+	glBindTexture(GL_TEXTURE_2D, tboDouble[1]);
 	glUniform1i(shader2Buffers2->SetUniform("BlurTexture"), 0);
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, tboDouble[0]);
@@ -171,5 +170,6 @@ void VFX::BlurBrightAreas(GLuint screenTexture, GLuint dstTexture, float brightn
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glEnable(GL_DEPTH_TEST);
 	glUseProgram(0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glBindTexture(GL_TEXTURE_2D, 0);
 }

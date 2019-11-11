@@ -70,8 +70,6 @@
 
 #define WIDTH 1600
 #define HEIGHT 900
-#define BLURWIDTH WIDTH/16
-#define BLURHEIGHT HEIGHT/16
 #define MOUSE_SENS 0.05f
 #define CAM_SPEED 5.f
 
@@ -195,26 +193,24 @@ int main() {
 	scene = new Scene(WIDTH, HEIGHT);
 
 	//renderbuffers
-	GLuint ppfbo[2], pptbo[2];
-	glGenFramebuffers(2, ppfbo);
-	glBindFramebuffer(GL_FRAMEBUFFER, ppfbo[0]);
+	GLuint ppfbo, pptbo;
+	glGenFramebuffers(1, &ppfbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, ppfbo);
 
-	glGenTextures(2, pptbo);
-	for (int t = 0; t < 2; t++) {
-		glBindFramebuffer(GL_FRAMEBUFFER, ppfbo[t]);
-		glBindTexture(GL_TEXTURE_2D, pptbo[t]);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, WIDTH, HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pptbo[t], 0);
+	glGenTextures(1, &pptbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, ppfbo);
+	glBindTexture(GL_TEXTURE_2D, pptbo);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, WIDTH, HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pptbo, 0);
 
-		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-			std::cout << "ERROR::FRAMEBUFFER::NOTCOMPLETE" << std::endl;
-		}
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+		std::cout << "ERROR::FRAMEBUFFER::NOTCOMPLETE" << std::endl;
 	}
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	GLuint fboM, rbo, tboM[2];
 	glGenFramebuffers(1, &fboM);
 	glBindFramebuffer(GL_FRAMEBUFFER, fboM);
@@ -311,6 +307,16 @@ int main() {
 	spider->model = glm::scale(glm::translate(glm::mat4(1.0f), spider->position), glm::vec3(.03, .03, .03));
 	spider->EnableCullFace(GL_CW);
 	//GLuint spiderID = scene->AddModel(spider);
+
+
+	Model* cat = new Model();
+	cat->path = "models/cat/Cat_Statue.fbx";
+	cat->position = glm::vec3(0, -3.5, 0);
+	cat->shader = shader1;
+	cat->model = glm::scale(glm::translate(glm::mat4(1.0f), cat->position), glm::vec3(1., 1., 1.));
+	cat->model = glm::rotate(cat->model, glm::radians(-90.f),  glm::vec3(1., 0., 0.));
+	cat->EnableCullFace(GL_CW);
+	GLuint catID = scene->AddModel(cat);
 
 
 	Model* nano = new Model();
@@ -476,9 +482,9 @@ int main() {
 		scene->DrawToFramebuffer(fboM);
 		//scene->DrawToScreen();
 		
-		VFX::GetInstance()->BlurBrightAreas(tboM[0], tboM[1], 0.7, blurWeightNum, blurA, BLUR, levels, 1);
+		VFX::GetInstance()->BlurBrightAreas(tboM[0], ppfbo, 1., blurWeightNum, blurA, BLUR, levels, 1);
 
-		//scene->DrawToScreen_Texture(&tboM[1]);
+		scene->DrawToScreen_Texture(&pptbo);
 		#ifdef DEBUG
 			std::cout << allocs << " Allocations\n";
 			allocs = 0;
