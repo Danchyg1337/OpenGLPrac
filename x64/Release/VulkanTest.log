@@ -1,26 +1,42 @@
-﻿  main.cpp
-c:\users\1337\source\repos\vulkantest\vulkantest\mesh.h(52): warning C4267: аргумент: преобразование из "size_t" в "GLsizei"; возможна потеря данных
-c:\users\1337\source\repos\vulkantest\vulkantest\main.cpp(78): warning C4305: инициализация: усечение из "double" в "float"
-c:\users\1337\source\repos\vulkantest\vulkantest\main.cpp(154): warning C4305: аргумент: усечение из "double" в "GLclampf"
-c:\users\1337\source\repos\vulkantest\vulkantest\main.cpp(207): warning C4305: аргумент: усечение из "double" в "GLfloat"
-c:\users\1337\source\repos\vulkantest\vulkantest\main.cpp(208): warning C4305: аргумент: усечение из "double" в "GLfloat"
-c:\users\1337\source\repos\vulkantest\vulkantest\main.cpp(142): warning C4101: model: неиспользованная локальная переменная
-c:\users\1337\source\repos\vulkantest\vulkantest\main.cpp(143): warning C4101: view: неиспользованная локальная переменная
-c:\users\1337\source\repos\vulkantest\vulkantest\main.cpp(292): warning C4305: -=: усечение из "double" в "float"
-c:\users\1337\source\repos\vulkantest\vulkantest\main.cpp(293): warning C4305: +=: усечение из "double" в "float"
-c:\users\1337\source\repos\vulkantest\vulkantest\main.cpp(296): warning C4305: +=: усечение из "double" в "float"
-c:\users\1337\source\repos\vulkantest\vulkantest\main.cpp(297): warning C4305: -=: усечение из "double" в "float"
-c:\users\1337\source\repos\vulkantest\vulkantest\main.cpp(333): warning C4244: =: преобразование "double" в "float", возможна потеря данных
-c:\users\1337\source\repos\vulkantest\vulkantest\main.cpp(334): warning C4244: =: преобразование "double" в "float", возможна потеря данных
-c:\users\1337\source\repos\vulkantest\vulkantest\main.cpp(338): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
-c:\users\1337\source\repos\vulkantest\vulkantest\main.cpp(339): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
-c:\users\1337\source\repos\vulkantest\vulkantest\main.cpp(340): warning C4244: =: преобразование "double" в "float", возможна потеря данных
-c:\users\1337\source\repos\vulkantest\vulkantest\main.cpp(341): warning C4244: =: преобразование "double" в "float", возможна потеря данных
+﻿  imgui.cpp
+  imgui_demo.cpp
+  imgui_draw.cpp
+  imgui_impl_glfw.cpp
+  imgui_impl_opengl3.cpp
+  imgui_widgets.cpp
+  main.cpp
+c:\users\1337\source\repos\vulkantest\scene.h(11): warning C4305: инициализация: усечение из "double" в "float"
+c:\users\1337\source\repos\vulkantest\texture.cpp(10): warning C4305: аргумент: усечение из "double" в "GLfloat"
+c:\users\1337\source\repos\vulkantest\mesh.cpp(47): warning C4267: аргумент: преобразование из "size_t" в "GLsizei"; возможна потеря данных
+c:\users\1337\source\repos\vulkantest\mesh.cpp(48): warning C4267: аргумент: преобразование из "size_t" в "GLsizei"; возможна потеря данных
+c:\users\1337\source\repos\vulkantest\scene.cpp(40): warning C4267: return: преобразование из "size_t" в "GLuint"; возможна потеря данных
+c:\users\1337\source\repos\vulkantest\scene.cpp(201): warning C4305: аргумент: усечение из "double" в "GLfloat"
+c:\users\1337\source\repos\vulkantest\scene.cpp(202): warning C4244: аргумент: преобразование "double" в "GLfloat", возможна потеря данных
+c:\users\1337\source\repos\vulkantest\scene.cpp(227): warning C4267: return: преобразование из "size_t" в "GLuint"; возможна потеря данных
+c:\users\1337\source\repos\vulkantest\vfx.cpp(25): warning C4018: <: несоответствие типов со знаком и без знака
+c:\users\1337\source\repos\vulkantest\vfx.cpp(69): warning C4244: return: преобразование "double" в "float", возможна потеря данных
+c:\users\1337\source\repos\vulkantest\main.cpp(185): warning C4305: аргумент: усечение из "double" в "float"
+c:\users\1337\source\repos\vulkantest\main.cpp(189): warning C4305: аргумент: усечение из "double" в "float"
+c:\users\1337\source\repos\vulkantest\main.cpp(290): warning C4267: аргумент: преобразование из "size_t" в "GLuint"; возможна потеря данных
+c:\users\1337\source\repos\vulkantest\main.cpp(291): warning C4267: аргумент: преобразование из "size_t" в "GLuint"; возможна потеря данных
+c:\users\1337\source\repos\vulkantest\main.cpp(298): warning C4244: аргумент: преобразование "double" в "unsigned int", возможна потеря данных
+c:\users\1337\source\repos\vulkantest\main.cpp(409): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
+c:\users\1337\source\repos\vulkantest\main.cpp(438): warning C4244: аргумент: преобразование "double" в "float", возможна потеря данных
+c:\users\1337\source\repos\vulkantest\main.cpp(509): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
+c:\users\1337\source\repos\vulkantest\main.cpp(511): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
+c:\users\1337\source\repos\vulkantest\main.cpp(523): warning C4305: -=: усечение из "double" в "float"
+c:\users\1337\source\repos\vulkantest\main.cpp(524): warning C4305: +=: усечение из "double" в "float"
+c:\users\1337\source\repos\vulkantest\main.cpp(527): warning C4305: +=: усечение из "double" в "float"
+c:\users\1337\source\repos\vulkantest\main.cpp(528): warning C4305: -=: усечение из "double" в "float"
+c:\users\1337\source\repos\vulkantest\main.cpp(578): warning C4244: =: преобразование "double" в "float", возможна потеря данных
+c:\users\1337\source\repos\vulkantest\main.cpp(579): warning C4244: =: преобразование "double" в "float", возможна потеря данных
+c:\users\1337\source\repos\vulkantest\main.cpp(583): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
+c:\users\1337\source\repos\vulkantest\main.cpp(584): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
+c:\users\1337\source\repos\vulkantest\main.cpp(585): warning C4244: =: преобразование "double" в "float", возможна потеря данных
+c:\users\1337\source\repos\vulkantest\main.cpp(586): warning C4244: =: преобразование "double" в "float", возможна потеря данных
 LINK : warning LNK4098: библиотека по умолчанию "LIBCMT" противоречит использованию других библиотек; используйте параметр /NODEFAULTLIB:library
-main.obj : error LNK2001: неразрешенный внешний символ "aiGetMaterialTextureCount"
-main.obj : error LNK2001: неразрешенный внешний символ ""public: char const * __cdecl Assimp::Importer::GetErrorString(void)const " (?GetErrorString@Importer@Assimp@@QEBAPEBDXZ)"
-main.obj : error LNK2001: неразрешенный внешний символ ""public: struct aiScene const * __cdecl Assimp::Importer::ReadFile(char const *,unsigned int)" (?ReadFile@Importer@Assimp@@QEAAPEBUaiScene@@PEBDI@Z)"
-main.obj : error LNK2001: неразрешенный внешний символ ""public: __cdecl Assimp::Importer::~Importer(void)" (??1Importer@Assimp@@QEAA@XZ)"
-main.obj : error LNK2001: неразрешенный внешний символ ""public: __cdecl Assimp::Importer::Importer(void)" (??0Importer@Assimp@@QEAA@XZ)"
-main.obj : error LNK2001: неразрешенный внешний символ "aiGetMaterialTexture"
-C:\Users\1337\source\repos\VulkanTest\x64\Release\VulkanTest.exe : fatal error LNK1120: неразрешенных внешних элементов: 6
+  Создание кода
+  All 3273 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Создание кода завершено
+glew32s.lib(glew.obj) : warning LNK4099: "vc120.pdb" PDB не найден с "glew32s.lib(glew.obj)" или на "C:\Users\1337\source\repos\VulkanTest\x64\Release\vc120.pdb"; компоновка объекта выполняется как при отсутствии отладочных данных
+  VulkanTest.vcxproj -> C:\Users\1337\source\repos\VulkanTest\x64\Release\VulkanTest.exe

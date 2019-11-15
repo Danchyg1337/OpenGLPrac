@@ -4,9 +4,10 @@ public:
 	std::vector<Model*> models;
 	std::vector<PointLight*> PointLights;
 	std::optional<SunLight*> sun;
-	
-	std::mutex mut_modelsLoad;
-	std::vector<std::future<void>> v_futures;
+	std::optional <FlashLight*> flashlight;
+
+	//std::mutex mut_modelsLoad;
+	//std::vector<std::future<void>> v_futures;
 
 	float gamma = 1.0, exposure = 2.2;
 
@@ -19,6 +20,7 @@ public:
 	Shader* shaderNormals;
 
 	glm::vec3 CameraPosition;
+	glm::vec3 CameraDirection;
 
 	bool showNormals = false;
 
@@ -32,6 +34,8 @@ public:
 	void DrawToScreen_Texture(GLuint* texture);
 	void DrawToScreen();
 
+	void UpdateModels();
+
 	bool DeleteModel(GLuint &id);
 	//bool DeleteModel(const char* path);
 
@@ -41,6 +45,7 @@ public:
 	std::vector<Model*> simpleModels;
 	std::vector<Model*> TrModels;
 	void SetUniforms(Model *mdl);
+
 private:
 	GLuint fboHDR = 0, rboHDR, tboHDR;
 	GLuint screenQuadVao;

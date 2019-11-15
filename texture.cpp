@@ -49,8 +49,14 @@ bool Texture::setFilteringMode(GLenum glType, int MGorMN) {
 	return 0;
 }
 
-void Cubemap::SetCubemap(std::string texts[6]) {
-	vao_id = SetVAO();
+Cubemap::Cubemap(std::string texts[6]) {
+	glGenVertexArrays(1, &vao_id);
+	glBindVertexArray(vao_id);
+	glGenBuffers(1, &vbo_id);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo_id);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), skyboxVertices, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, NULL, 3 * sizeof(float), 0);
+	glEnableVertexAttribArray(0);
 	glGenTextures(1, &id);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, id);
 	for (int t = 0; t < 6; t++) {
@@ -70,79 +76,6 @@ void Cubemap::SetCubemap(std::string texts[6]) {
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 }
 
-void Cubemap::GenerateCubemap(glm::vec3 position, Scene* scene) {
-	vao_id = SetVAO();
-	glActiveTexture(GL_TEXTURE0);
-	GLuint id;
-	glGenTextures(1, &id);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, id);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-
-
-	GLuint fbo;
-	glGenFramebuffers(1, &fbo);
-	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-
-	GLuint rbo;
-	glGenRenderbuffers(1, &rbo);
-	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, cubemapSize, cubemapSize);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
-	for (int t = 0; t < 6; t++) {
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + t, 0, GL_RGB, cubemapSize, cubemapSize, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-	}
-
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT6, GL_TEXTURE_CUBE_MAP_POSITIVE_X, id, 0);
-	for (int t = 0; t < 6; t++) {
-		ScreenToTexture(t, position, fbo, scene);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + t, id, 0);
-	}
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
-void Cubemap::ScreenToTexture(unsigned int side, glm::vec3 cameraPos, GLuint fbo, Scene* scene) {					
-	Camera cmr = Camera(cameraPos, glm::radians(90.0f), 1, 0.01f, 50.0f);
-	float pitch, yaw;
-	switch (side) {
-	case 0:
-		pitch = 0;
-		yaw = -90;
-		break;
-	case 1:
-		pitch = 0;
-		yaw = 90;
-		break;
-	case 2:
-		pitch = 90;
-		yaw = 0;
-		break;
-	case 3:
-		pitch = -90;
-		yaw = 0;
-		break;
-	case 4:
-		pitch = 0;
-		yaw = 0;
-		break;
-	case 5:
-		pitch = 0;
-		yaw = 180;
-		break;
-	}
-	glm::vec3 cursore;
-	cursore.x = glm::cos(glm::radians(yaw)) * glm::cos(glm::radians(pitch));
-	cursore.y = glm::sin(glm::radians(pitch));
-	cursore.z = glm::sin(glm::radians(yaw)) * glm::cos(glm::radians(pitch));
-	cmr.update(cameraPos, glm::normalize(cursore));
-	scene->projection = cmr.GetProjection();
-	scene->view = cmr.GetView();
-	scene->DrawToFramebuffer(fbo);
-}
-
 void Cubemap::Bind() {
 	glActiveTexture(GL_TEXTURE8);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, id);
@@ -151,13 +84,4 @@ void Cubemap::Bind() {
 void Cubemap::Unbind() {
 	glActiveTexture(GL_TEXTURE8);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-}
-
-GLuint Cubemap::SetVAO() {
-	VAO vao_cbmap(1);
-	vao_cbmap.Bind();
-	Buffer vbo_cubemap(1, GL_ARRAY_BUFFER);
-	vbo_cubemap.Data(skyboxVertices, sizeof(skyboxVertices), GL_STATIC_DRAW);
-	vbo_cubemap.VAP(0, 3, GL_FLOAT, 3 * sizeof(float), 0);
-	return vao_cbmap.ID;
 }

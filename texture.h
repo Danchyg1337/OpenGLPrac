@@ -23,21 +23,15 @@ class Cubemap {
 public:
 	unsigned char* side;
 	int width, height, channels;
-	GLuint id, vao_id;
+	GLuint id, vao_id, vbo_id;
 	const unsigned int cubemapSize = 128;
 
-	void SetCubemap(std::string texts[6]);
-
-	void GenerateCubemap(glm::vec3 position, Scene* scene);
-
-	void ScreenToTexture(unsigned int side, glm::vec3 cameraPos, GLuint fbo, Scene* scene);			
-
+	Cubemap(std::string texts[6]);
+	
 	void Bind();
 	void Unbind();
 
 private:
-
-	GLuint SetVAO();
 
 	const float skyboxVertices[108] = {
 		// positions          

@@ -48,7 +48,7 @@ void Scene::LoadModels() {
 }
 
 void Scene::LoadSingleModel(Model* mdl) {
-	std::lock_guard<std::mutex> lock(mut_modelsLoad);
+	//std::lock_guard<std::mutex> lock(mut_modelsLoad);
 	//std::cout << "Loading " << mdl->path.value_or("NONE") << std::endl;
 	if(mdl->path.has_value())
 		mdl->loadModel(mdl->path.value());
@@ -81,7 +81,7 @@ bool Scene::DeleteModel(GLuint &id) {
 }
 
 void Scene::Draw() {
-	std::lock_guard<std::mutex> lock(mut_modelsLoad);
+	//std::lock_guard<std::mutex> lock(mut_modelsLoad);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	SortTransparent();
 	//draw not transparent
@@ -92,10 +92,14 @@ void Scene::Draw() {
 		}
 		mdl->shader->Use();
 		if (mdl->cubemap.has_value()) (*mdl->cubemap)->Bind();
-		for (int t = 0; t < 5; t++) {
+		for (int t = 0; t < PointLights.size(); t++) {
 			PointLights[t]->SetActive(mdl->shader, t);
 		}
 		if (sun.has_value()) (*sun)->SetActive(mdl->shader);
+		if (flashlight.has_value()) {
+			if ((*flashlight)->active) (*flashlight)->Refresh(CameraDirection, CameraPosition);
+			(*flashlight)->SetActive(mdl->shader, (*flashlight)->active);
+		}
 		SetUniforms(mdl);
 		mdl->Draw();
 		(*mdl->cubemap)->Unbind();
@@ -188,6 +192,10 @@ void Scene::Clear() {
 		delete a;
 	}
 	models.clear();
+	for (auto& a : PointLights) {
+		delete a;
+	}
+	PointLights.clear();
 }
 
 void Scene::SetUniforms(Model *mdl) {
@@ -218,6 +226,18 @@ void Scene::ShowNormals(Model* mdl) {
 
 	mdl->DrawShader(shaderNormals);
 	glUseProgram(0);
+}
+
+void Scene::UpdateModels() {
+	for (auto mdl : simpleModels) {
+		mdl->model = glm::translate(glm::mat4(1.0f), mdl->position);
+		mdl->model = glm::rotate(mdl->model, glm::radians(mdl->rotation.x), glm::vec3(1, 0, 0));
+		mdl->model = glm::rotate(mdl->model, glm::radians(mdl->rotation.y), glm::vec3(0, 1, 0));
+		mdl->model = glm::rotate(mdl->model, glm::radians(mdl->rotation.z), glm::vec3(0, 0, 1));
+		mdl->model = glm::scale(mdl->model, mdl->scale);
+	}
+	for (auto mdl : TrModels)
+		mdl->model = glm::translate(glm::mat4(1.0f), mdl->position);
 }
 
 GLuint Scene::FindModel(Model* mdl)

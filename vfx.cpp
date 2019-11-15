@@ -70,22 +70,21 @@ float VFX::BlurGaussianFunction(float X, float A){
 }
 void VFX::Init(unsigned width, unsigned height){
 	glGenFramebuffers(2, ppfbo);
-	glBindFramebuffer(GL_FRAMEBUFFER, ppfbo[0]);
-
 	glGenTextures(2, pptbo);
 	for (int t = 0; t < 2; t++) {
 		glBindFramebuffer(GL_FRAMEBUFFER, ppfbo[t]);
 		glBindTexture(GL_TEXTURE_2D, pptbo[t]);
-		glTexStorage2D(GL_TEXTURE_2D, 10, GL_RGB16F, width, height);
-		glGenerateMipmap(GL_TEXTURE_2D); 
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+		glTextureStorage2D(pptbo[t], 10, GL_RGB16F, width, height);
+		//glTextureSubImage2D(pptbo[t], 0, 0, 0, width, height, GL_RGBA, GL_FLOAT, 0);
+		glGenerateTextureMipmap(pptbo[t]); 
+		glTextureParameteri(pptbo[t], GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTextureParameteri(pptbo[t], GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTextureParameteri(pptbo[t], GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+		glTextureParameteri(pptbo[t], GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pptbo[t], 0);
 
 		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-			std::cout << "ERROR::FRAMEBUFFER::NOTCOMPLETE" << std::endl;
+			std::cout << "ERROR::FRAMEBUFFER::NOTCOMPLETE"<< " Error code: " << glCheckFramebufferStatus(GL_FRAMEBUFFER)<< std::endl;
 		}
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
@@ -123,6 +122,9 @@ void VFX::Init(unsigned width, unsigned height){
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + t, GL_TEXTURE_2D, tboDouble[t], 0);
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+			std::cout << "ERROR::FRAMEBUFFER::NOTCOMPLETE" << " Error code: " << glCheckFramebufferStatus(GL_FRAMEBUFFER) << std::endl;
+		}
 	}
 
     blurTwidth = width;
@@ -137,9 +139,8 @@ void VFX::Init(unsigned width, unsigned height){
 void VFX::BlurBrightAreas(GLuint screenTexture, GLuint dstFramebuffer, float brightness, unsigned weightNum, float gaussianFloat, int blurAmount, float* levels, unsigned levelsNum){  
 	int widthS, heightS;
 	glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, screenTexture);
-    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &widthS);
-    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &heightS);
+    glGetTextureLevelParameteriv(screenTexture, 0, GL_TEXTURE_WIDTH, &widthS);
+    glGetTextureLevelParameteriv(screenTexture, 0, GL_TEXTURE_HEIGHT, &heightS);
     if(!Initialized) Init(widthS, heightS);
 
     glDisable(GL_DEPTH_TEST);

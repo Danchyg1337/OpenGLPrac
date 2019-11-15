@@ -60,8 +60,8 @@ static void ShowOverlayMatrice(bool* p_open, float* matrice, const char* matrice
 	ImGui::End();
 }
 
-static void ShowWindowTree(std::vector<PointLight*>* lights, float* gamma, float* exposure, int* blur, int* blurWeightNum, float* blurA) {
-	if (ImGui::CollapsingHeader("Lightning")){
+static void ShowWindowTree(std::vector<Model*> *models ,std::vector<PointLight*>* lights, float* gamma, float* exposure, int* blur, int* blurWeightNum, float* blurA) {
+	if (ImGui::CollapsingHeader("Environment")){
 		if (ImGui::TreeNode("Point lights"))
 		{
 			for (int i = 0; i < lights->size(); i++)
@@ -81,6 +81,23 @@ static void ShowWindowTree(std::vector<PointLight*>* lights, float* gamma, float
 				}
 			ImGui::TreePop();
 		}
+		if (ImGui::TreeNode("Objects"))
+		{
+			for (int i = 0; i < models->size(); i++)
+				if (ImGui::TreeNode((void*)(intptr_t)i, models->at(i)->path.value_or("MANUALLY CREATED").data(), i))
+				{
+					ImGui::Text("Position");
+					ImGui::DragFloat("X", &models->at(i)->position.x, 0.05f);
+					ImGui::DragFloat("Y", &models->at(i)->position.y, 0.05f);
+					ImGui::DragFloat("Z", &models->at(i)->position.z, 0.05f);
+					ImGui::Text("Rotation");
+					ImGui::DragFloat("Pitch", &models->at(i)->rotation.x, 0.05f);
+					ImGui::DragFloat("Yaw", &models->at(i)->rotation.y, 0.05f);
+					ImGui::DragFloat("Roll", &models->at(i)->rotation.z, 0.05f);
+					ImGui::TreePop();
+				}
+			ImGui::TreePop();
+		}
 	}
 	if (ImGui::CollapsingHeader("Screen")){
 		if (ImGui::TreeNode("HDR"))
@@ -94,7 +111,7 @@ static void ShowWindowTree(std::vector<PointLight*>* lights, float* gamma, float
 		if (ImGui::TreeNode("Blur"))
 		{
 			ImGui::DragInt("Blur Weights Number", blurWeightNum, 1.0f, 0, 32);
-			ImGui::DragFloat("Blur Funcstion A Constant", blurA, 0.01f, 0.0f, 0.0f, "%.01f");
+			ImGui::DragFloat("Blur Funcstion A Constant", blurA, 0.01f, 0.0f, 10.0f, "%.01f");
 			ImGui::DragInt("Blur Cycles", blur, 1.0f, 0, 32);
 			ImGui::TreePop();
 		}

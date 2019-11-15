@@ -75,6 +75,7 @@ public:
 
 class FlashLight : Light {
 public:
+	bool active = false;
 	glm::vec3 direction;
 	glm::vec3 position;
 	float cutOff = 17.5f;

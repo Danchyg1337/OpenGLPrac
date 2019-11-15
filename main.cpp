@@ -22,8 +22,8 @@
 #include <optional>
 #include <cmath>
 #include <chrono>
-#include <future>
-#include <mutex>
+//#include <future>
+//#include <mutex>
 #include <memory>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -52,8 +52,6 @@
 #include "shader.h"
 #include "light.h"
 #include "camera.h"
-#include "VAO.h"
-#include "Buffer.h"
 #include "texture.h"
 #include "mesh.h"
 #include "model.h"
@@ -85,22 +83,20 @@ void* operator new(size_t size) {
 #endif
 
 bool keys[1024];
-bool flashlight = false;
+bool flashlight = true;
 bool firstmouse = true;
 bool cursoreActive = false;
 int BLUR = 5, blurWeightNum = 5;
 float pitch, yaw, lastX, lastY;
 float blurA = 2;
-float TEX_VISIBLE = 1.0;
 
 glm::mat4 model;
 glm::vec3 lightPos(0.0f, 11.0f, 1.0f);  //light
 glm::vec3 cameraPos = glm::vec3(3, 12, 0);
 glm::vec3 normCursore;
-glm::vec3 doodPos(0.0, 10.0, 0.0);
 Scene* scene;
 
-void GetFPS(GLFWwindow* window, float& fps);
+void GetFPS(float& fps);
 void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int modes);
 void DoMovement(float fElapsedTime);
 void MouseEvent(GLFWwindow* window, double MouseX, double MouseY);
@@ -113,26 +109,6 @@ void PrintErrors(){
 	}
 	std::cout<<"End of PrintError()\nPress any key\n";
 	std::cin.get();
-}
-
-void outMat4(glm::mat4 mt) {
-	for (int t = 0; t < 4; t++) {
-		for (int y = 0; y < 4; y++) {
-			std::cout << mt[t][y];
-		}
-		std::cout << "\n";
-	}
-}
-
-template <class T>
-bool checkExist(std::vector<T> &vec, unsigned int cell) {
-	try {
-		vec.at(cell);
-	}
-	catch (...) {
-		return false;
-	}
-	return true;
 }
 
 int main() {
@@ -148,12 +124,22 @@ int main() {
 	glfwSetKeyCallback(gwin, KeyCallback);
 	glfwSetCursorPosCallback(gwin, MouseEvent);
 	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_STENCIL_TEST);
+	//glEnable(GL_STENCIL_TEST);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	if (glewInit() != GLEW_OK) {
 		std::cout << ":C\n";
 	}
 	
+	std::cout << glGetString(GL_VERSION) << std::endl;
+	std::cout << glGetString(GL_VENDOR) << std::endl;
+
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glfwSwapInterval(0);
+
+	scene = new Scene(WIDTH, HEIGHT);
+	Camera camera(cameraPos, glm::radians(90.0f), (float)WIDTH / (float)HEIGHT, 0.01f, 1000.0f);
+
+
 	glm::vec3 cubePositions[] = {
 		glm::vec3(0.0f, 0.0f, 0.0f),
 		glm::vec3(2.0f, 5.0f, -15.0f),
@@ -185,33 +171,11 @@ int main() {
 		lightPositions[t]->SetAttenuation(1.0f, 0.045, 0.0075);
 	}
 	SunLight* sun = new SunLight(glm::vec3(-.4f, -1.0f, -.3f), glm::vec3(1.0f, 1.0f, 1.0f));
-	FlashLight fLight(normCursore, cameraPos, glm::vec3(1.0f));
-	fLight.SetAttenuation(1.0f, 0.045, 0.0075);
+	FlashLight* fLight = new FlashLight(normCursore, cameraPos, glm::vec3(1.0f));
+	fLight->SetAttenuation(1.0f, 0.045, 0.0075);
+	scene->flashlight = fLight;
 
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	glfwSwapInterval(0);
-	scene = new Scene(WIDTH, HEIGHT);
-
-	//renderbuffers
-	GLuint ppfbo, pptbo;
-	glGenFramebuffers(1, &ppfbo);
-	glBindFramebuffer(GL_FRAMEBUFFER, ppfbo);
-
-	glGenTextures(1, &pptbo);
-	glBindFramebuffer(GL_FRAMEBUFFER, ppfbo);
-	glBindTexture(GL_TEXTURE_2D, pptbo);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, WIDTH, HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pptbo, 0);
-
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-		std::cout << "ERROR::FRAMEBUFFER::NOTCOMPLETE" << std::endl;
-	}
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	GLuint fboM, rbo, tboM[2];
+	GLuint fboM, rbo, tboM;
 	glGenFramebuffers(1, &fboM);
 	glBindFramebuffer(GL_FRAMEBUFFER, fboM);
 
@@ -220,42 +184,15 @@ int main() {
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, WIDTH, HEIGHT);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
 
-	glGenTextures(2, tboM);
-	for (int t = 0; t < 2; t++) {
-		glBindTexture(GL_TEXTURE_2D, tboM[t]);
-		glTexStorage2D(GL_TEXTURE_2D, 10, GL_RGB16F, WIDTH, HEIGHT);
-		glGenerateMipmap(GL_TEXTURE_2D); 
-		//glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, WIDTH, HEIGHT, GL_RGBA, GL_FLOAT, NULL);
-		glTextureParameteri(tboM[t], GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTextureParameteri(tboM[t], GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + t, GL_TEXTURE_2D, tboM[t], 0);
-	}
-
-	unsigned int width = WIDTH, height = HEIGHT;
-	GLuint fboB[5], tboB[5];
-	glGenFramebuffers(5, fboB);
-	glGenTextures(5, tboB);
-	for (int t = 0; t < 5; t++) {
-		glBindFramebuffer(GL_FRAMEBUFFER, fboB[t]);
-		glBindTexture(GL_TEXTURE_2D, tboB[t]);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tboB[t], 0);
-
-		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-			std::cout << "ERROR::FRAMEBUFFER::NOTCOMPLETE" << std::endl;
-		}
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		width = std::max((unsigned)1, width/2);
-		height = std::max((unsigned)1, height/2);
-	}
-	
-
+	glGenTextures(1, &tboM);
+	glBindTexture(GL_TEXTURE_2D, tboM);
+	glTextureStorage2D(tboM, 10, GL_RGB16F, WIDTH, HEIGHT);
+	glGenerateTextureMipmap(tboM);
+	glTextureParameteri(tboM, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTextureParameteri(tboM, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTextureParameteri(tboM, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTextureParameteri(tboM, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tboM, 0);
 
 	Shader* shader1 = new Shader("shaders/mysh.glsl");
 	Shader* shader3 = new Shader("shaders/mysh3.glsl");
@@ -269,11 +206,6 @@ int main() {
 	Shader* shaderNormals = new Shader("shaders/showNormals.glsl");
 	Shader* shaderREMIND = new Shader("shaders/trytoremind.glsl");
 
-	glBindVertexArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	glUseProgram(0);
-
 	Texture tex1 = Texture("textures/container.png", GL_TEXTURE0, GL_RGB, "texture_diffuse");
 	Texture tex2 = Texture("textures/container_specular.png", GL_TEXTURE0, GL_RGB, "texture_specular");
 	Texture tex3 = Texture("textures/grass.png", GL_TEXTURE0, GL_RGBA, "texture_diffuse", true);
@@ -281,10 +213,7 @@ int main() {
 	Texture tex4 = Texture("textures/blue.png", GL_TEXTURE0, GL_RGBA, "texture_diffuse");
 
 	std::string cubemtex[] = { "skybox/right.jpg", "skybox/left.jpg", "skybox/top.jpg", "skybox/bottom.jpg","skybox/front.jpg" ,"skybox/back.jpg" };
-	Cubemap* texCubeMap = new Cubemap();
-	texCubeMap->SetCubemap(cubemtex);
-
-	Cubemap* dynamicCubeMap = new Cubemap();
+	Cubemap* texCubeMap = new Cubemap(cubemtex);
 
 	//cubes
 	Mesh cubeMesh(prmtvs::Cube.verts.begin(), prmtvs::Cube.verts.size(), std::vector<Texture>({tex1, tex2}));
@@ -297,14 +226,13 @@ int main() {
 	grassM->shader = shader1;
 	srand(glfwGetTime());
 	grassM->position = glm::vec3(0, 1, 0);
-	grassM->model = glm::translate(glm::mat4(1.0f), grassM->position);
 	GLuint grassID = scene->AddModel(grassM);
 
 	Model* spider = new Model();
 	spider->path = "models/OBJ/spider.obj";
 	spider->position = glm::vec3(0, 4, 0);
 	spider->shader = shader1;
-	spider->model = glm::scale(glm::translate(glm::mat4(1.0f), spider->position), glm::vec3(.03, .03, .03));
+	spider->scale = glm::vec3(.03, .03, .03);
 	spider->EnableCullFace(GL_CW);
 	//GLuint spiderID = scene->AddModel(spider);
 
@@ -313,17 +241,16 @@ int main() {
 	cat->path = "models/cat/Cat_Statue.fbx";
 	cat->position = glm::vec3(0, -3.5, 0);
 	cat->shader = shader1;
-	cat->model = glm::scale(glm::translate(glm::mat4(1.0f), cat->position), glm::vec3(1., 1., 1.));
-	cat->model = glm::rotate(cat->model, glm::radians(-90.f),  glm::vec3(1., 0., 0.));
+	cat->rotation = glm::vec3(-90.f, 0., 0.);
 	cat->EnableCullFace(GL_CW);
 	GLuint catID = scene->AddModel(cat);
 
 
 	Model* nano = new Model();
 	nano->path = "models/nanosuit/nanosuit.obj";
-	nano->position = doodPos;
+	nano->position = glm::vec3(0, 10, 0);
 	nano->shader = shader1;
-	nano->model = glm::scale(glm::translate(glm::mat4(1.0f), nano->position), glm::vec3(.3, .3, .3));
+	nano->scale = glm::vec3(.3, .3, .3);
 	nano->EnableCullFace(GL_CW);
 	nano->cubemap = texCubeMap;
 	GLuint nanoID = scene->AddModel(nano);
@@ -332,7 +259,7 @@ int main() {
 	mod->path = "models/mod/model.obj";
 	mod->position = glm::vec3(5, 13, 0);
 	mod->shader = shader1;
-	mod->model = glm::scale(glm::translate(glm::mat4(1.0f), mod->position), glm::vec3(3, 3, 3));
+	mod->scale = glm::vec3(3, 3, 3);
 	mod->EnableCullFace(GL_CW);
 	mod->cubemap = texCubeMap;
 	//GLuint modID = scene->AddModel(mod);
@@ -340,7 +267,7 @@ int main() {
 
 	Model* floorM = new Model(floor);
 	floorM->position = glm::vec3(0.0f, -4.0f, 0.0f);
-	floorM->model = glm::scale(glm::translate(glm::mat4(1.0f), floorM->position), glm::vec3(50.0f, 1.0f, 50.0f));
+	floorM->scale = glm::vec3(50.0f, 1.0f, 50.0f);
 	floorM->shader = shader1;
 	GLuint floorID = scene->AddModel(floorM);
 
@@ -350,7 +277,7 @@ int main() {
 		Model* cubeM = new Model(cubeMesh);
 		model = glm::translate(glm::mat4(1.0f), cubePositions[t]);
 		cubeM->position = cubePositions[t];
-		cubeM->model = glm::rotate(model, (float)glfwGetTime() * 5.0f, cubePositions[t]);
+		cubeM->rotation = glm::vec3((float)glfwGetTime() * 5.0f * cubePositions[t]);
 		cubeM->shader = shader1;
 		cubeM->EnableCullFace();
 		cubeID.push_back(scene->AddModel(cubeM));
@@ -360,7 +287,6 @@ int main() {
 	for (unsigned int a = 0; a < lightPositions.size(); a++) {
 		Model* lightCubeM = new Model(lightCubeMesh);
 		lightCubeM->position = lightPositions[a]->position;
-		lightCubeM->model = glm::translate(glm::mat4(1.0f), lightPositions[a]->position);
 		lightCubeM->lightColor = lightPositions[a]->color;
 		lightCubeM->shader = shader3;
 		lightCubeM->EnableCullFace();
@@ -373,15 +299,11 @@ int main() {
 		Model* glassM = new Model(glass, true);
 		glassM->shader = shader1;
 		glassM->position = glassPositions[t];
-		glassM->model = glm::translate(glm::mat4(1.0f), glassM->position);
 		glassID.push_back(scene->AddModel(glassM));
 	}
 
 	scene->LoadModels();						//important call, models wont load without it.
-
-	Camera camera(cameraPos, glm::radians(90.0f), (float)WIDTH / (float)HEIGHT, 0.01f, 1000.0f);
-
-
+	scene->skybox = texCubeMap;
 	scene->cubemapShader = shaderCubemap;
 	scene->PointLights = lightPositions;
 	//scene->sun = sun;
@@ -390,26 +312,15 @@ int main() {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
-
 	ImGui::StyleColorsDark();
-
 	ImGui_ImplOpenGL3_Init("#version 130");
 	ImGui_ImplGlfw_InitForOpenGL(gwin, true);
-
-
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+
 	bool show_demo_window = false;
-
-	glDisable(GL_STENCIL_TEST);
 	double fElapsedTime = 0;
-	scene->skybox = texCubeMap;
-	//dynamicCubeMap->GenerateCubemap(glm::vec3(0, 4, 0), scene);
-
 	float X = 2, A = 2;
 	float funcW = 1/(A*sqrt(2*M_PI))*std::exp((-X*X)/(2*A*A));
-
-	auto tp1 = std::chrono::system_clock::now();
-	auto tp2 = std::chrono::system_clock::now();
 
 	/*{std::lock_guard<std::mutex> lock(scene->mut_modelsLoad);
 	std::cout << "Simple models: \n";
@@ -427,6 +338,8 @@ int main() {
 	system("pause");
 	}*/
 	float FPS;
+	auto tp1 = std::chrono::system_clock::now();
+	auto tp2 = std::chrono::system_clock::now();
 	while (!glfwWindowShouldClose(gwin)) {
 		tp2 = std::chrono::system_clock::now();
 		std::chrono::duration<float> elapsedTime = tp2 - tp1;
@@ -434,8 +347,9 @@ int main() {
 		fElapsedTime = elapsedTime.count();
 		
 		//dynamicCubeMap->GenerateCubemap(glm::vec3(0, 4, 0), scene);
-		GetFPS(gwin, FPS);
+		GetFPS(FPS);
 		DoMovement(fElapsedTime);
+		scene->UpdateModels();
 		if (cursoreActive) glfwSetInputMode(gwin, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 		else glfwSetInputMode(gwin, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
@@ -444,6 +358,8 @@ int main() {
 		scene->projection = camera.GetProjection();
 		scene->view = camera.GetView();
 		scene->CameraPosition = cameraPos;
+		scene->CameraDirection = normCursore;
+		(*scene->flashlight)->active = flashlight;
 		///////////////////////////////////////////////////////////////////// imgui
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
@@ -455,7 +371,7 @@ int main() {
 			if (show_demo_window)
 				ImGui::ShowDemoWindow(&show_demo_window);
 
-			ShowWindowTree(&lightPositions, &scene->gamma, &scene->exposure, &BLUR, &blurWeightNum, &blurA);
+			ShowWindowTree(&scene->models, &lightPositions, &scene->gamma, &scene->exposure, &BLUR, &blurWeightNum, &blurA);
 		}
 
 		/////////////////////////////////////////////////////////////////////
@@ -463,28 +379,24 @@ int main() {
 		//cubes drawing
 		{//std::lock_guard<std::mutex> lock(scene->mut_modelsLoad);
 		for (GLuint t = 0; t < cubeCnt; t++) {
-			model = glm::translate(glm::mat4(1.0f), scene->models.at(cubeID.at(t))->position);
-			scene->models.at(cubeID.at(t))->model = glm::rotate(model, (float)glfwGetTime() * 5.0f, scene->models.at(cubeID.at(t))->position);
+			float time = (float)glfwGetTime()*t+1;
+			scene->models.at(cubeID.at(t))->position = glm::vec3(scene->models.at(cubeID.at(t))->position.x + sin(time)*0.03, scene->models.at(cubeID.at(t))->position.y, scene->models.at(cubeID.at(t))->position.z + cos(time)*0.03);
+			scene->models.at(cubeID.at(t))->rotation = glm::vec3(time * 5.0f * scene->models.at(cubeID.at(t))->position);
 		}
 		for (GLuint t = 0; t < lightCubeID.size(); t++) {
 			scene->models.at(lightCubeID.at(t))->position = lightPositions.at(t)->position;
 			scene->models.at(lightCubeID.at(t))->lightColor = lightPositions.at(t)->color;
-			scene->models.at(lightCubeID.at(t))->model = glm::translate(glm::mat4(1.0f), scene->models.at(lightCubeID.at(t))->position);
-
 		}
 		}
-		if (flashlight)
-			fLight.Refresh(normCursore, cameraPos);
-		fLight.SetActive(shader1, flashlight);
 
-		float levels[1]{1.0};
+		float levels[]{1.0};
 
 		scene->DrawToFramebuffer(fboM);
 		//scene->DrawToScreen();
 		
-		VFX::GetInstance()->BlurBrightAreas(tboM[0], ppfbo, 1., blurWeightNum, blurA, BLUR, levels, 1);
+		VFX::GetInstance()->BlurBrightAreas(tboM, fboM, 1., blurWeightNum, blurA, BLUR, levels, 1);
 
-		scene->DrawToScreen_Texture(&pptbo);
+		scene->DrawToScreen_Texture(&tboM);
 		#ifdef DEBUG
 			std::cout << allocs << " Allocations\n";
 			allocs = 0;
@@ -505,7 +417,7 @@ int main() {
 	return 0;
 }
 
-void GetFPS(GLFWwindow* window, float& fps) {
+void GetFPS(float& fps) {
 	static float previous_seconds = glfwGetTime();
 	static int frame_count;
 	float current_seconds = glfwGetTime();
@@ -519,14 +431,6 @@ void GetFPS(GLFWwindow* window, float& fps) {
 }
 
 void DoMovement(float fElapsedTime) {
-	if (keys[GLFW_KEY_E]) {
-		TEX_VISIBLE -= 0.1;
-		if (TEX_VISIBLE < 0.) TEX_VISIBLE += 0.01;
-	}
-	if (keys[GLFW_KEY_R]) {
-		TEX_VISIBLE += 0.1;
-		if (TEX_VISIBLE > 1.) TEX_VISIBLE -= 0.01;
-	}
 	if (keys[GLFW_KEY_W]) {
 		cameraPos += normCursore * CAM_SPEED * fElapsedTime;
 	}
@@ -539,19 +443,6 @@ void DoMovement(float fElapsedTime) {
 	if (keys[GLFW_KEY_D]) {
 		cameraPos -= glm::normalize(glm::cross(glm::vec3(0, 1, 0), normCursore)) * CAM_SPEED * fElapsedTime;
 	}
-	if (keys[GLFW_KEY_G]) {
-		doodPos.x += CAM_SPEED;
-	}
-	if (keys[GLFW_KEY_H]) {
-		doodPos.x -= CAM_SPEED;
-	}
-	if (keys[GLFW_KEY_T]) {
-		doodPos.y += CAM_SPEED;
-	}
-	if (keys[GLFW_KEY_Y]) {
-		doodPos.y -= CAM_SPEED;
-	}
-	flashlight = false;
 	if (keys[GLFW_KEY_F]) {
 		flashlight = true;
 	}
