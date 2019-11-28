@@ -83,7 +83,7 @@ void* operator new(size_t size) {
 #endif
 
 bool keys[1024];
-bool flashlight = true;
+bool flashlight = false;
 bool firstmouse = true;
 bool cursoreActive = false;
 int BLUR = 5, blurWeightNum = 5;
@@ -290,6 +290,7 @@ int main() {
 		lightCubeM->lightColor = lightPositions[a]->color;
 		lightCubeM->shader = shader3;
 		lightCubeM->EnableCullFace();
+		lightPositions[a]->modelID = lightCubeM;
 		lightCubeID.push_back(scene->AddModel(lightCubeM));
 	}
 
@@ -389,14 +390,18 @@ int main() {
 		}
 		}
 
-		float levels[]{1.0};
+		float levels[]{5.0};
 
-		scene->DrawToFramebuffer(fboM);
+		
+		//scene->DrawToFramebuffer(fboM);
 		//scene->DrawToScreen();
 		
-		VFX::GetInstance()->BlurBrightAreas(tboM, fboM, 1., blurWeightNum, blurA, BLUR, levels, 1);
+		//VFX::GetInstance()->BlurBrightAreas(tboM, fboM, 1., blurWeightNum, blurA, BLUR, levels, 1);
 
-		scene->DrawToScreen_Texture(&tboM);
+		//scene->DrawToScreen_Texture(&tboM);
+
+		scene->DrawToGBuffer_Screen();
+	
 		#ifdef DEBUG
 			std::cout << allocs << " Allocations\n";
 			allocs = 0;
@@ -444,7 +449,7 @@ void DoMovement(float fElapsedTime) {
 		cameraPos -= glm::normalize(glm::cross(glm::vec3(0, 1, 0), normCursore)) * CAM_SPEED * fElapsedTime;
 	}
 	if (keys[GLFW_KEY_F]) {
-		flashlight = true;
+		flashlight = !flashlight;
 	}
 }
 

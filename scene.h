@@ -18,6 +18,9 @@ public:
 	Shader* cubemapShader;
 	Shader* screenShader;
 	Shader* shaderNormals;
+	Shader* shaderGBuffer;
+	Shader* shaderGBufferShow;
+	Shader* shaderGBufferDefaultShading;
 
 	glm::vec3 CameraPosition;
 	glm::vec3 CameraDirection;
@@ -33,6 +36,7 @@ public:
 	void DrawToScreen_Shader(Shader* shader);
 	void DrawToScreen_Texture(GLuint* texture);
 	void DrawToScreen();
+	void DrawToGBuffer_Screen();
 
 	void UpdateModels();
 
@@ -44,14 +48,15 @@ public:
 	void Clear();
 	std::vector<Model*> simpleModels;
 	std::vector<Model*> TrModels;
-	void SetUniforms(Model *mdl);
+	void SetUniforms(Model *mdl, Shader* custom=nullptr);
 
 private:
-	GLuint fboHDR = 0, rboHDR, tboHDR;
+	GLuint fboHDR, rboHDR, tboHDR;
+	GLuint fboG, rboG, tboGc, tboGn, tboGp;
 	GLuint screenQuadVao;
 	GLuint width, height;
 	void LoadSingleModel(Model* mdl);
-	void Draw();
+	void Draw(Shader* toAllModels = nullptr);
 	void SortTransparent();
 	void ShowNormals(Model *mdl);
 	

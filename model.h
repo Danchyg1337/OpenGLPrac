@@ -7,7 +7,7 @@ public:
 	glm::vec3 position = glm::vec3(0, 0, 0);
 	glm::vec3 rotation = glm::vec3(1, 1, 1);
 	glm::vec3 scale = glm::vec3(1, 1, 1);
-	glm::vec3 lightColor;
+	std::optional<glm::vec3> lightColor;
 	std::optional<std::string> path;
 	Shader* shader;
 	bool transparent;
@@ -35,9 +35,3 @@ private:
 	Mesh processMesh(aiMesh* mesh, const aiScene* scene);
 	std::vector<Texture> loadMaterialTextures(aiMaterial* material, aiTextureType type, std::string typeName);
 };
-
-unsigned int a = 5;
-double d = 4.56677;
-float f;
-char dfdsf = '4';
-std::string r4445 = "dasdasd";

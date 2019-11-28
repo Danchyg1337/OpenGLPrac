@@ -7,8 +7,6 @@ out vec3 Normal;
 out vec3 FragPos;
 out vec2 textureCor;
 
-uniform vec3 lightColor;
-uniform vec3 objColor;
 uniform mat4 projection;
 uniform mat4 view;
 uniform mat4 model;

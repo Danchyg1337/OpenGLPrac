@@ -21,7 +21,7 @@ void Mesh::Draw(Shader* shader) {
 	GLuint diffuseN = 1, specularN = 1, reflectN = 1;
 	glBindVertexArray(VAO);
 	for (GLuint t = 0; t < texts.size(); t++) {
-		glActiveTexture(GL_TEXTURE0 + t);
+		glActiveTexture(GL_TEXTURE10 + t);								//<10 reserved for deffered
 
 		char name[25];
 		strcpy_s(name, texts[t].type.data());
@@ -39,15 +39,14 @@ void Mesh::Draw(Shader* shader) {
 		char unif[100] = "material.";
 		strcat_s(unif, name);
 		strcat_s(unif, num);
-		//std::cout << unif<<std::endl;
-		glUniform1i(glGetUniformLocation(shader->Program, unif), t);
+		glUniform1i(glGetUniformLocation(shader->Program, unif), 10 + t);
 		glBindTexture(GL_TEXTURE_2D, texts[t].id);
 	}
 	if(!inds.empty())
 		glDrawElements(GL_TRIANGLES, inds.size(), GL_UNSIGNED_INT, 0);
 	else glDrawArrays(GL_TRIANGLES, 0, verts.size());
 	for (GLuint t = 0; t < texts.size(); t++) {
-		glActiveTexture(GL_TEXTURE0 + t);
+		glActiveTexture(GL_TEXTURE10 + t);
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 	glBindVertexArray(0);

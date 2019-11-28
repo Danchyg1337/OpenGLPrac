@@ -1,6 +1,6 @@
-#ifndef LIGHT_H
-#define LIGHT_H
+#pragma once
 
+class Model;
 class Light {
 public:
 	glm::vec3 color;
@@ -24,7 +24,7 @@ public:
 class PointLight : public Light {
 public:
 	glm::vec3 position;
-
+	std::optional<Model*> modelID;
 	PointLight(glm::vec3 pos, glm::vec3 col) : position(pos){
 		specular = color =  col;
 		diffuse = col * 0.5f;
@@ -78,12 +78,12 @@ public:
 	bool active = false;
 	glm::vec3 direction;
 	glm::vec3 position;
-	float cutOff = 17.5f;
-	float outerCutOff = 20.5f;
+	float cutOff = 56.5f;
+	float outerCutOff = 65.5f;
 	FlashLight(glm::vec3 dir, glm::vec3 pos, glm::vec3 col) : direction(dir) {
 		specular = color = col;
-		diffuse = col * 0.5f;
-		ambient = col * 0.0f;
+		diffuse = col * 0.9f;
+		ambient = col * 0.f;
 	}
 
 	void SetAttenuation(float cnst, float lin, float qdc) {
@@ -98,7 +98,8 @@ public:
 	}
 
 	void SetActive(Shader* shader, bool active) {
-		glUniform1i(glGetUniformLocation(shader->Program, "Flight.active"), active);
+		shader->Use();
+		glUniform1i(glGetUniformLocation(shader->Program, "Flight.active2"), active);
 		glUniform3f(glGetUniformLocation(shader->Program, "Flight.ambient"), ambient.x, ambient.y, ambient.z);
 		glUniform3f(glGetUniformLocation(shader->Program, "Flight.diffuse"), diffuse.x, diffuse.y, diffuse.z);
 		glUniform3f(glGetUniformLocation(shader->Program, "Flight.specular"), specular.x, specular.y, specular.z);
@@ -111,5 +112,3 @@ public:
 		glUniform1f(glGetUniformLocation(shader->Program, "Flight.outerCutOff"), glm::cos(glm::radians(outerCutOff)));
 	}
 };
-
-#endif
