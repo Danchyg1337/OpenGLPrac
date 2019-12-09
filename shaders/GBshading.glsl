@@ -14,7 +14,7 @@ struct PointLight{
 	float linear;
 	float quadratic;
 };
-#define NUM_LIGHTS 50
+#define NUM_LIGHTS 5
 uniform PointLight Plight[NUM_LIGHTS];
 out PointLight plight;
 

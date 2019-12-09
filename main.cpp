@@ -398,11 +398,9 @@ int main() {
 		//scene->DrawToScreen();
 		
 		//VFX::GetInstance()->BlurBrightAreas(tboM, fboM, 1., blurWeightNum, blurA, BLUR, levels, 1);
-
 		//scene->DrawToScreen_Texture(&tboM);
-
 		scene->DrawToGBuffer_Screen();
-	
+		
 		#ifdef DEBUG
 			std::cout << allocs << " Allocations\n";
 			allocs = 0;

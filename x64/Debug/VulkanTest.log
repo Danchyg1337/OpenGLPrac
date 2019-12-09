@@ -15,21 +15,20 @@ c:\users\1337\source\repos\vulkantest\scene.cpp(346): warning C4244: аргум�
 c:\users\1337\source\repos\vulkantest\scene.cpp(368): warning C4267: аргумент: преобразование из "size_t" в "unsigned int"; возможна потеря данных
 c:\users\1337\source\repos\vulkantest\vfx.cpp(25): warning C4018: <: несоответствие типов со знаком и без знака
 c:\users\1337\source\repos\vulkantest\vfx.cpp(69): warning C4244: return: преобразование "double" в "float", возможна потеря данных
-c:\users\1337\source\repos\vulkantest\main.cpp(170): warning C4244: аргумент: преобразование "time_t" в "unsigned int", возможна потеря данных
-c:\users\1337\source\repos\vulkantest\main.cpp(177): warning C4305: аргумент: усечение из "double" в "float"
-c:\users\1337\source\repos\vulkantest\main.cpp(181): warning C4305: аргумент: усечение из "double" в "float"
-c:\users\1337\source\repos\vulkantest\main.cpp(225): warning C4267: аргумент: преобразование из "size_t" в "GLuint"; возможна потеря данных
-c:\users\1337\source\repos\vulkantest\main.cpp(226): warning C4267: аргумент: преобразование из "size_t" в "GLuint"; возможна потеря данных
-c:\users\1337\source\repos\vulkantest\main.cpp(233): warning C4244: аргумент: преобразование "double" в "unsigned int", возможна потеря данных
-c:\users\1337\source\repos\vulkantest\main.cpp(330): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
-c:\users\1337\source\repos\vulkantest\main.cpp(358): warning C4244: аргумент: преобразование "double" в "float", возможна потеря данных
-c:\users\1337\source\repos\vulkantest\main.cpp(432): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
-c:\users\1337\source\repos\vulkantest\main.cpp(434): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
+c:\users\1337\source\repos\vulkantest\main.cpp(172): warning C4305: аргумент: усечение из "double" в "float"
+c:\users\1337\source\repos\vulkantest\main.cpp(176): warning C4305: аргумент: усечение из "double" в "float"
+c:\users\1337\source\repos\vulkantest\main.cpp(220): warning C4267: аргумент: преобразование из "size_t" в "GLuint"; возможна потеря данных
+c:\users\1337\source\repos\vulkantest\main.cpp(221): warning C4267: аргумент: преобразование из "size_t" в "GLuint"; возможна потеря данных
+c:\users\1337\source\repos\vulkantest\main.cpp(228): warning C4244: аргумент: преобразование "double" в "unsigned int", возможна потеря данных
+c:\users\1337\source\repos\vulkantest\main.cpp(325): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
+c:\users\1337\source\repos\vulkantest\main.cpp(353): warning C4244: аргумент: преобразование "double" в "float", возможна потеря данных
+c:\users\1337\source\repos\vulkantest\main.cpp(425): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
+c:\users\1337\source\repos\vulkantest\main.cpp(427): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
+c:\users\1337\source\repos\vulkantest\main.cpp(473): warning C4244: =: преобразование "double" в "float", возможна потеря данных
+c:\users\1337\source\repos\vulkantest\main.cpp(474): warning C4244: =: преобразование "double" в "float", возможна потеря данных
+c:\users\1337\source\repos\vulkantest\main.cpp(478): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
+c:\users\1337\source\repos\vulkantest\main.cpp(479): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
 c:\users\1337\source\repos\vulkantest\main.cpp(480): warning C4244: =: преобразование "double" в "float", возможна потеря данных
 c:\users\1337\source\repos\vulkantest\main.cpp(481): warning C4244: =: преобразование "double" в "float", возможна потеря данных
-c:\users\1337\source\repos\vulkantest\main.cpp(485): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
-c:\users\1337\source\repos\vulkantest\main.cpp(486): warning C4244: инициализация: преобразование "double" в "float", возможна потеря данных
-c:\users\1337\source\repos\vulkantest\main.cpp(487): warning C4244: =: преобразование "double" в "float", возможна потеря данных
-c:\users\1337\source\repos\vulkantest\main.cpp(488): warning C4244: =: преобразование "double" в "float", возможна потеря данных
 c:\users\1337\source\repos\vulkantest\scene.cpp(290): warning C4715: Scene::FindModel: значение возвращается не при всех путях выполнения
   VulkanTest.vcxproj -> C:\Users\1337\source\repos\VulkanTest\x64\Debug\VulkanTest.exe
