@@ -22,6 +22,8 @@ public:
 	Shader* shaderGBufferShow;
 	Shader* shaderGBufferDefaultShading;
 
+	Model* sphere;
+
 	glm::vec3 CameraPosition;
 	glm::vec3 CameraDirection;
 
@@ -68,7 +70,7 @@ private:
 	-1.0f, -1.0f,  0.0f, 0.0f,
 	 1.0f,  1.0f,  1.0f, 1.0f,
 	 1.0f,  1.0f,  1.0f, 1.0f,
-	 1.0f, -1.0f,  1.0f, 0.0f,
-	-1.0f, -1.0f,  0.0f, 0.0f
+	-1.0f, -1.0f,  0.0f, 0.0f,
+	 1.0f, -1.0f,  1.0f, 0.0f
 	};
 };

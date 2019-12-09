@@ -167,7 +167,8 @@ int main() {
 		new PointLight(glm::vec3(7.4f, 4.4f, -3.5f), glm::vec3(0.0f, 1.0f, 1.0f))
 	};
 
-	for (int t = 0; t < 5; t++) {
+
+	for (int t = 0; t < lightPositions.size(); t++) {
 		lightPositions[t]->SetAttenuation(1.0f, 0.045, 0.0075);
 	}
 	SunLight* sun = new SunLight(glm::vec3(-.4f, -1.0f, -.3f), glm::vec3(1.0f, 1.0f, 1.0f));

@@ -10,6 +10,10 @@ void Model::Draw() {
 	for (GLuint t = 0; t < meshes.size(); t++) 
 		meshes[t].Draw(this->shader);
 }
+void Model::DrawInstanced(unsigned int size) {
+	for (GLuint t = 0; t < meshes.size(); t++)
+		meshes[t].DrawInstanced(this->shader, size);
+}
 void Model::DrawShader(Shader* shdr) {
 	for (GLuint t = 0; t < meshes.size(); t++)
 		meshes[t].Draw(shdr);

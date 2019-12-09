@@ -24,6 +24,7 @@ public:
 class PointLight : public Light {
 public:
 	glm::vec3 position;
+	float radius = 1.;
 	std::optional<Model*> modelID;
 	PointLight(glm::vec3 pos, glm::vec3 col) : position(pos){
 		specular = color =  col;
@@ -51,6 +52,14 @@ public:
 		glUniform1f(glGetUniformLocation(shader->Program, (line + "constant").c_str()), constant);
 		glUniform1f(glGetUniformLocation(shader->Program, (line + "linear").c_str()), linear);
 		glUniform1f(glGetUniformLocation(shader->Program, (line + "quadratic").c_str()), quadratic);
+
+
+
+
+		float cm = std::fmax(std::fmax(color.r, color.g), color.b);
+		radius = (-linear + sqrt(linear*linear - 4. * quadratic * (constant - cm * (256. / 5.)))) / (2. * quadratic);
+		glUniform1f(glGetUniformLocation(shader->Program, (line + "radius").c_str()), radius);
+
 	}
 };
 

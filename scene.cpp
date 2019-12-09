@@ -64,6 +64,12 @@ Scene::Scene(GLuint screenWidth, GLuint screenHeight) {
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glBindRenderbuffer(GL_RENDERBUFFER, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	sphere = new Model();
+	sphere->path = "models/sphere/sphere.obj";
+	sphere->shader = shaderGBufferDefaultShading;
+	sphere->EnableCullFace(GL_CW);
+	sphere->loadModel(sphere->path.value());
 }
 
 GLuint Scene::AddModel(Model* model) {
@@ -282,7 +288,7 @@ GLuint Scene::FindModel(Model* mdl)
 		ret++;
 	}
 };
-
+void PrintErrors();
 void Scene::DrawToGBuffer_Screen() {
 	glBindFramebuffer(GL_FRAMEBUFFER, fboG);
 	GLuint drawbuffers[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
@@ -314,13 +320,14 @@ void Scene::DrawToGBuffer_Screen() {
 		glUseProgram(0);
 	}
 	glDisable(GL_BLEND);
-	
-	
+
 
 	glDisable(GL_DEPTH_TEST);
+	//glEnable(GL_CULL_FACE);
 	glBindFramebuffer(GL_FRAMEBUFFER, fboHDR);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-	glBindVertexArray(screenQuadVao);
+	//glBindVertexArray(screenQuadVao);
 	//shaderGBufferShow->Use();
 	shaderGBufferDefaultShading->Use();
 	glActiveTexture(GL_TEXTURE0);
@@ -337,17 +344,35 @@ void Scene::DrawToGBuffer_Screen() {
 	glUniform1i(shaderGBufferDefaultShading->SetUniform("cubemap"), 8);
 	glUniform1f(shaderGBufferDefaultShading->SetUniform("refraction"), 1.31);
 	glUniform1f(shaderGBufferDefaultShading->SetUniform("time"), glfwGetTime());
+	char udata[50];
 	for (int t = 0; t < PointLights.size(); t++) {
 		PointLights[t]->SetActive(shaderGBufferDefaultShading, t);
+		sprintf_s(udata, "model[%d]", t);
+		glUniformMatrix4fv(glGetUniformLocation(shaderGBufferDefaultShading->Program, udata), 1, GL_FALSE, glm::value_ptr(glm::scale(PointLights[t]->modelID.value()->model, glm::vec3(PointLights[t]->radius)))); 
 	}
 	if (sun.has_value()) (*sun)->SetActive(shaderGBufferDefaultShading);
 	if (flashlight.has_value()) {
 		if ((*flashlight)->active) (*flashlight)->Refresh(CameraDirection, CameraPosition);
 		(*flashlight)->SetActive(shaderGBufferDefaultShading, (*flashlight)->active);
 	}
-	glDrawArrays(GL_TRIANGLES, 0, 6);
-	glEnable(GL_DEPTH_TEST);
 
+	glUniformMatrix4fv(glGetUniformLocation(shaderGBufferDefaultShading->Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+	glUniformMatrix4fv(glGetUniformLocation(shaderGBufferDefaultShading->Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_FRONT);
+	glDisable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_ONE, GL_ONE);							
+	glBlendEquation(GL_FUNC_ADD);	
+	glDrawBuffer(GL_COLOR_ATTACHMENT0);
+	sphere->DrawInstanced(PointLights.size());
+	glCullFace(GL_BACK);
+	glDisable(GL_BLEND);
+	glDisable(GL_CULL_FACE);
+	glDisable(GL_STENCIL_TEST);
+
+
+	glEnable(GL_DEPTH_TEST);
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, fboG);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fboHDR);
 	glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);

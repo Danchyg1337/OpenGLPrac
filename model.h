@@ -19,6 +19,7 @@ public:
 	Model(const char* path, bool transpParts = false);
 	Model(Mesh &msh, bool transpParts = false);
 	void Draw();
+	void DrawInstanced(unsigned int size);
 	void DrawShader(Shader* shdr);
 
 	void loadModel(std::string path);

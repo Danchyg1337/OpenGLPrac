@@ -12,6 +12,7 @@ public:
 	Mesh(std::vector<Vertex>::iterator verticesBegin, GLuint size, std::vector<Texture> textures);
 	Mesh(std::vector<Vertex> vertices, std::vector<GLuint> indices, std::vector<Texture> textures);
 	void Draw(Shader* shader);
+	void DrawInstanced(Shader* shader, unsigned int size);
 	std::vector<Vertex> verts;
 	std::vector<GLuint> inds;
 	std::vector<Texture> texts;

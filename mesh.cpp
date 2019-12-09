@@ -52,6 +52,41 @@ void Mesh::Draw(Shader* shader) {
 	glBindVertexArray(0);
 }
 
+void Mesh::DrawInstanced(Shader* shader, unsigned int size) {
+	GLuint diffuseN = 1, specularN = 1, reflectN = 1;
+	glBindVertexArray(VAO);
+	for (GLuint t = 0; t < texts.size(); t++) {
+		glActiveTexture(GL_TEXTURE10 + t);								//<10 reserved for deffered
+
+		char name[25];
+		strcpy_s(name, texts[t].type.data());
+		char num[2] = { '0', '\0' };									//unsafe but fast;
+
+		if (!strcmp(name, "texture_diffuse")) {
+			num[0] += diffuseN++;
+		}
+		else if (!strcmp(name, "texture_specular")) {
+			num[0] += specularN++;
+		}
+		else if (!strcmp(name, "texture_reflect")) {
+			num[0] += reflectN++;
+		}
+		char unif[100] = "material.";
+		strcat_s(unif, name);
+		strcat_s(unif, num);
+		glUniform1i(glGetUniformLocation(shader->Program, unif), 10 + t);
+		glBindTexture(GL_TEXTURE_2D, texts[t].id);
+	}
+	if (!inds.empty())
+		glDrawElementsInstanced(GL_TRIANGLES, inds.size(), GL_UNSIGNED_INT, 0, size);
+	else glDrawArraysInstanced(GL_TRIANGLES, 0, verts.size(), size);
+	for (GLuint t = 0; t < texts.size(); t++) {
+		glActiveTexture(GL_TEXTURE10 + t);
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
+	glBindVertexArray(0);
+}
+
 void Mesh::Setup() {
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
