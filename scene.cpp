@@ -259,6 +259,7 @@ void Scene::SortTransparent() {
 }
 
 void Scene::ShowNormals(Model* mdl) {
+	glDepthMask(GL_FALSE);
 	this->shaderNormals->Use();
 	glUniformMatrix4fv(mdl->shader->SetUniform("projection"), 1, GL_FALSE, glm::value_ptr(projection));
 	glUniformMatrix4fv(mdl->shader->SetUniform("view"), 1, GL_FALSE, glm::value_ptr(view));
@@ -266,6 +267,7 @@ void Scene::ShowNormals(Model* mdl) {
 
 	mdl->DrawShader(shaderNormals);
 	glUseProgram(0);
+	glDepthMask(GL_TRUE);
 }
 
 void Scene::UpdateModels() {
@@ -288,7 +290,25 @@ GLuint Scene::FindModel(Model* mdl)
 		ret++;
 	}
 };
-void PrintErrors();
+
+void Scene::ShowGBuffer(GLuint fbo) {
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+	glBindVertexArray(screenQuadVao);
+	glDisable(GL_DEPTH_TEST);
+	shaderGBufferShow->Use();
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, tboGc);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, tboGn);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, tboGp);
+	glUniform1i(shaderGBufferDefaultShading->SetUniform("textureGc"), 0);
+	glUniform1i(shaderGBufferDefaultShading->SetUniform("textureGn"), 1);
+	glUniform1i(shaderGBufferDefaultShading->SetUniform("textureGp"), 2);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glEnable(GL_DEPTH_TEST);
+}
+
 void Scene::DrawToGBuffer_Screen() {
 	glBindFramebuffer(GL_FRAMEBUFFER, fboG);
 	GLuint drawbuffers[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
@@ -326,7 +346,10 @@ void Scene::DrawToGBuffer_Screen() {
 	//glEnable(GL_CULL_FACE);
 	glBindFramebuffer(GL_FRAMEBUFFER, fboHDR);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, fboG);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fboHDR);
+	glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+	glBindFramebuffer(GL_FRAMEBUFFER, fboHDR);
 	//glBindVertexArray(screenQuadVao);
 	//shaderGBufferShow->Use();
 	shaderGBufferDefaultShading->Use();
@@ -348,7 +371,7 @@ void Scene::DrawToGBuffer_Screen() {
 	for (int t = 0; t < PointLights.size(); t++) {
 		PointLights[t]->SetActive(shaderGBufferDefaultShading, t);
 		sprintf_s(udata, "model[%d]", t);
-		glUniformMatrix4fv(glGetUniformLocation(shaderGBufferDefaultShading->Program, udata), 1, GL_FALSE, glm::value_ptr(glm::scale(PointLights[t]->modelID.value()->model, glm::vec3(PointLights[t]->radius)))); 
+		glUniformMatrix4fv(glGetUniformLocation(shaderGBufferDefaultShading->Program, udata), 1, GL_FALSE, glm::value_ptr(glm::scale(PointLights[t]->modelID.value()->model, glm::vec3(PointLights[t]->radius)))); //radius/10. for debug
 	}
 	if (sun.has_value()) (*sun)->SetActive(shaderGBufferDefaultShading);
 	if (flashlight.has_value()) {
@@ -358,13 +381,28 @@ void Scene::DrawToGBuffer_Screen() {
 
 	glUniformMatrix4fv(glGetUniformLocation(shaderGBufferDefaultShading->Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 	glUniformMatrix4fv(glGetUniformLocation(shaderGBufferDefaultShading->Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+
+	glDisable(GL_CULL_FACE);
+	glEnable(GL_DEPTH_TEST);
+	glDepthMask(GL_FALSE);
+	glEnable(GL_STENCIL_TEST);
+	
+	glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP, GL_KEEP);
+	glStencilOpSeparate(GL_BACK, GL_KEEP, GL_INCR_WRAP, GL_KEEP);
+	glStencilFunc(GL_ALWAYS, 0, 0);
+	glDrawBuffer(GL_NONE);
+	sphere->DrawInstanced(PointLights.size());
+	
+	glStencilFunc(GL_NOTEQUAL, 0, 0xFF);
+	glDrawBuffer(GL_COLOR_ATTACHMENT0);
+
+	glDepthMask(GL_TRUE);
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_FRONT);
 	glDisable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_ONE, GL_ONE);							
 	glBlendEquation(GL_FUNC_ADD);	
-	glDrawBuffer(GL_COLOR_ATTACHMENT0);
 	sphere->DrawInstanced(PointLights.size());
 	glCullFace(GL_BACK);
 	glDisable(GL_BLEND);
@@ -373,10 +411,6 @@ void Scene::DrawToGBuffer_Screen() {
 
 
 	glEnable(GL_DEPTH_TEST);
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, fboG);
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fboHDR);
-	glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-	glBindFramebuffer(GL_FRAMEBUFFER, fboHDR);
 	for(auto mdl : PointLights)
 		if (mdl->modelID.has_value()) {
 			(*mdl->modelID)->shader->Use();

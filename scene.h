@@ -44,7 +44,7 @@ public:
 
 	bool DeleteModel(GLuint &id);
 	//bool DeleteModel(const char* path);
-
+	void ShowGBuffer(GLuint fbo);
 
 	void LoadModels();
 	void Clear();

@@ -12,7 +12,7 @@ uniform mat4 view;
 uniform mat4 model;
 
 void main(){
-	Normal = normal; //normalize(mat3(transpose(inverse(model))) * normal);
+	Normal = mat3(transpose(inverse(model))) * normal;
 	FragPos = vec3(model * vec4(position, 1.0));
 	gl_Position = projection * view * model * vec4(position, 1.0f);
 	textureCor = vec2(texture.x, texture.y);

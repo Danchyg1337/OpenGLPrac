@@ -393,14 +393,15 @@ int main() {
 
 		float levels[]{5.0};
 
-		
+		//scene->showNormals = true;
 		//scene->DrawToFramebuffer(fboM);
 		//scene->DrawToScreen();
-		
+
 		//VFX::GetInstance()->BlurBrightAreas(tboM, fboM, 1., blurWeightNum, blurA, BLUR, levels, 1);
 		//scene->DrawToScreen_Texture(&tboM);
 		scene->DrawToGBuffer_Screen();
-		
+		//scene->ShowGBuffer(0);
+
 		#ifdef DEBUG
 			std::cout << allocs << " Allocations\n";
 			allocs = 0;
